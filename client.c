@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    fprintf(stderr, "Message du serveur :\n%s\n", answer);
+    printf("%s\n", answer);     // Affichage du message
 
     close(socketClient);
 
