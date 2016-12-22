@@ -20,9 +20,9 @@ int main(int argc, char** argv) {
     /*
      * variable global
      */
-    const int sizeMessage = 256;           // taille maximal du message
+    const size_t sizeMessage = 256;           // taille maximal du message
     const char bonjour[] = "Bonjour ";    // pour le message retour du serveur
-    ssize_t nbChar;                      // pour le nombre d octet lue et envoie
+    ssize_t nbChar;                      // pour le nombre d octets lue et envoie
 
 
     /*
@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
     serverAddress.sin_family = AF_INET;
     socklen_t lenServer = sizeof(serverAddress);
 
-    int bindReturn = bind(serverSocket, (struct sockaddr*) &serverAddress, lenServer);  //affectation du nom a la socket
+    int bindReturn = bind(serverSocket, (struct sockaddr*) &serverAddress, lenServer);  // affectation du nom a la socket
     if (bindReturn < 0){
         perror("bind()");
         close (serverSocket);
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
          * reception du message et configuration de la sockaddr_in suivant le client
          */
         char message[sizeMessage];
-        nbChar = recvfrom(serverSocket, message, (size_t) sizeMessage, 0, (struct sockaddr*) &clientAddress, &lenClient);
+        nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr*) &clientAddress, &lenClient);
         if (nbChar <= 0) {
             perror("No byte received");
             close(serverSocket);
@@ -92,7 +92,9 @@ int main(int argc, char** argv) {
          */
         char answer[sizeMessage+strlen(bonjour)];
         memset(answer, '\0', sizeof(answer));   // transformation en "string" vide pour strcat
-        //concatenation du message retour
+        /*
+         * concatenation du message retour
+         */
         strcat(answer, bonjour);
         strcat(answer,message);
 
@@ -103,6 +105,8 @@ int main(int argc, char** argv) {
             exit(EXIT_FAILURE);
         }
     }
+
     close(serverSocket);
+
     return 0;
 }

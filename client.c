@@ -17,28 +17,34 @@ int main(int argc, char* argv[]) {
         exit(-1);
     }
 
+    /*
+     * variable global
+     */
+    const int sizeMax = 256;      // taille maximal du message
+    const int start=3;           //message ecrit a partir du 4eme argument
+    ssize_t nbChar;             // pour le nombre d octets lue et envoie
 
-    int start=3; //message ecrit a partir du 4eme argument
-    ssize_t nbChar;
 
-    //calcul de la taille du message et verification
+    /*
+     * calcul de la taille du message et verification
+     */
     size_t sizeMessage=0;
-    for(int a=start; a<argc; a++){
+    for(int a=start; a<argc; a++) {
         sizeMessage+=strlen(argv[a]);
-        if(a+1<argc){
+        if(a+1<argc) {
             sizeMessage++;
         }
     }
-    if(sizeMessage>=256){
-        perror("Over size (256 char max)");
-        exit(-1);
+    if(sizeMessage>=sizeMax) {
+        fprintf(stderr, "Over size (%d char max)", sizeMax);
+        exit(EXIT_FAILURE);
     }
 
-    //allocation du message
+    /*
+     * concatenation de tous les arguments dans message
+     */
     char message[sizeMessage];
-    memset(message, '\0', sizeof(message));
-
-    //concatenation de tous les arguments
+    memset(message, '\0', sizeof(message));      // transformation en "string" vide pour strcat
     for(int i=start; i<argc; i++){
         strcat(message, argv[i]);
         if(i+1<argc){
@@ -47,16 +53,23 @@ int main(int argc, char* argv[]) {
     }
 
 
-    //creation du client udp
-    struct sockaddr_in serverAddress, clientAddress;
+    /*
+     * configuration pour la transmission udp vers le serveur
+     */
 
+    /*
+     * creation de la socket du client
+     */
     int socketClient=socket(AF_INET, SOCK_DGRAM, 0);
     if(socketClient<0){
         perror("socket()");
         exit(EXIT_FAILURE);
     }
 
-
+    /*
+     * creation et configuration de la sockaddr_in du client
+     */
+    struct sockaddr_in clientAddress;
     clientAddress.sin_addr.s_addr = htonl(INADDR_ANY);
     memset(clientAddress.sin_zero, 0, sizeof(clientAddress.sin_zero));
     clientAddress.sin_port = htons(0);
@@ -64,38 +77,41 @@ int main(int argc, char* argv[]) {
     socklen_t lenClient = sizeof(clientAddress);
 
 
-    int bindReturn = bind(socketClient, (const struct sockaddr *) &clientAddress, lenClient);
-
+    int bindReturn = bind(socketClient, (const struct sockaddr *) &clientAddress, lenClient);   // affectation du nom a la socket
     if (bindReturn < 0){
         perror("bind()");
         close (socketClient);
         exit(EXIT_FAILURE);
     }
 
-
+    /*
+     * creation et configuration de la sockaddr_in du serveur
+     */
+    struct sockaddr_in serverAddress;
     serverAddress.sin_addr.s_addr = inet_addr(argv[1]);
     memset(serverAddress.sin_zero, 0, sizeof(serverAddress.sin_zero));
     serverAddress.sin_port = htons((uint16_t) atoi(argv[2]));
     serverAddress.sin_family = AF_INET;
     socklen_t lenServer = sizeof(serverAddress);
 
-
-    nbChar=sendto(socketClient, (void *) message, sizeMessage, 0, (struct sockaddr *) &serverAddress, lenServer);
-
-    if (nbChar != (ssize_t)sizeMessage) {
+    /*
+     * envoie du message au serveur
+     */
+    nbChar = sendto(socketClient, message, sizeMessage, 0, (struct sockaddr *) &serverAddress, lenServer);
+    if (nbChar != sizeMessage) {
         perror("sendto()");
         close (socketClient);
         exit(EXIT_FAILURE);
     }
 
-    //reception du message du serveur
-
-    size_t sizeAnswer=(strlen(message) + 1 + 8); // 8->"Bonjour "
+    /*
+     * reseption de la reponse du serveur dans answer
+     */
+    size_t sizeAnswer = (strlen(message) + 1 + 8); // calcul de la taille du message retour | 8->"Bonjour "
     char answer[sizeAnswer];
 
-    nbChar=recvfrom(socketClient, (void *) answer, sizeAnswer, 0, (struct sockaddr *) &serverAddress, &lenClient);
 
-
+    nbChar = recvfrom(socketClient, answer, sizeAnswer, 0, (struct sockaddr *) &serverAddress, &lenClient);
     if (nbChar != sizeAnswer){
         perror("sendto() : invalid size");
         close(socketClient);
