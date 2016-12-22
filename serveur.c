@@ -50,10 +50,13 @@ int main(int argc, char** argv) {
 
 
         char domaine[NI_MAXHOST];
-        if (getnameinfo((const struct sockaddr *) &client, (socklen_t) lg_client, domaine, sizeof(domaine), NULL, 0, NI_NAMEREQD)){
-            printf("CLIENT: %s:%d (%s)\n",inet_ntoa(client.sin_addr), client.sin_port, domaine);
-        } else{
+
+        int getnameReturn=getnameinfo((const struct sockaddr *) &client, (socklen_t) lg_client, domaine, sizeof(domaine), NULL, 0, NI_NAMEREQD);
+
+        if (getnameReturn<0){
             printf("CLIENT: %s:%d\n",inet_ntoa(client.sin_addr), client.sin_port);
+        } else{
+            printf("CLIENT: %s:%d (%s)\n",inet_ntoa(client.sin_addr), client.sin_port, domaine);
         }
 
         // Envoi du message au client
@@ -74,7 +77,6 @@ int main(int argc, char** argv) {
             exit (EXIT_FAILURE);
         }
     }
-
 
     return 0;
 }

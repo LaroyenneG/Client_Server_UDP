@@ -38,7 +38,6 @@ int main(int argc, char* argv[]) {
     char message[sizeMessage];
     memset(message, '\0', sizeof(message));
 
-    printf("la taille est de %d \n",sizeMessage);
 
     //concatenation
     for(int i=start; i<argc; i++){
@@ -48,27 +47,45 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    //affichage du message
-    printf("%s\n",message);
-
 
     //envoi du message
-    int socket;
+
     struct sockaddr_in serveur, client;
     socklen_t lserveur=(socklen_t) sizeof(serveur);
 
-    socket = creer_client_udp( argv[1], atoi(argv[2]), &serveur, &client, 1);
+    //socketClient = creer_client_udp( argv[1], atoi(argv[2]), &serveur, &client, 1);
 
-    if ( socket < 0 ) {
+    int socketClient=socket(AF_INET, SOCK_DGRAM, 0);
+
+    if(socketClient<0){
         perror("socket creation");
         exit(-1);
     }
 
-    ssize_t n=sendto(socket, (void *) message, (size_t) sizeMessage, 0, (struct sockaddr *) &serveur, (socklen_t) sizeof(serveur));
+    bzero( &client , sizeof(client) );
+    client.sin_family = AF_INET;
+    client.sin_addr.s_addr = htonl(INADDR_ANY);
+    client.sin_port = htons ( 0 );
+
+    int bindReturn = bind (socketClient, (const struct sockaddr *) &client, sizeof (client) );
+
+    if ( bindReturn < 0 ){
+        perror("bind()");
+        close (socketClient);
+        exit(-1);
+    }
+
+    bzero( &serveur, sizeof(serveur) );
+    serveur.sin_family = AF_INET;
+    serveur.sin_addr.s_addr = inet_addr(argv[1]);
+    serveur.sin_port = htons ((uint16_t) atoi(argv[2]));
+
+
+    ssize_t n=sendto(socketClient, (void *) message, (size_t) sizeMessage, 0, (struct sockaddr *) &serveur, (socklen_t) sizeof(serveur));
 
     if ( n != (ssize_t)sizeMessage) {
         perror("sendto()");
-        close (socket);
+        close (socketClient);
         exit(-1);
     }
     //reception du message
@@ -76,18 +93,18 @@ int main(int argc, char* argv[]) {
     int sizeAnswer= (int) (strlen(message) + 1 + 8); // 8->"Bonjour "
     char answer[sizeAnswer];
 
-    n=recvfrom(socket, (void *) answer, (size_t) (sizeAnswer), 0, (struct sockaddr *) &serveur, &lserveur);
+    n=recvfrom(socketClient, (void *) answer, (size_t) (sizeAnswer), 0, (struct sockaddr *) &serveur, &lserveur);
 
 
     if ( n != sizeAnswer){
         perror("recvfrom()");
-        close(socket);
+        close(socketClient);
         return EXIT_FAILURE;
     }
 
 
     printf("Message recu du serveur : %s\n",answer);
-    close(socket);
+    close(socketClient);
 
     return 0;
 }
