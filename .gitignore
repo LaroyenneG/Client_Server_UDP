@@ -4,3 +4,5 @@ CMakeLists*
 fonctions_creation*
 cmake*
 .idea/*
+*.a
+

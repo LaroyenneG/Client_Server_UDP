@@ -12,13 +12,13 @@ all : exe
 exe : $(EXENAME1)
 
 $(EXENAME1) : $(OBJ1)
-	gcc -g $^ -o $@
+	gcc -g $^ -o $@ client_serveur.a
 
 
 exe : $(EXENAME2)
 
 $(EXENAME2) : $(OBJ2)
-	gcc -g $^ -o $@
+	gcc -g $^ -o $@ client_serveur.a
 
 
 
