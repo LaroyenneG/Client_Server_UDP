@@ -19,7 +19,6 @@ int main(int argc, char* argv[]) {
     }
 
 
-
     int start=3;
 
     //calcul de la taille du message
@@ -58,8 +57,8 @@ int main(int argc, char* argv[]) {
     int socketClient=socket(AF_INET, SOCK_DGRAM, 0);
 
     if(socketClient<0){
-        perror("socket creation");
-        exit(-1);
+        perror("socket()");
+        exit(EXIT_FAILURE);
     }
 
     bzero( &client , sizeof(client) );
@@ -86,7 +85,7 @@ int main(int argc, char* argv[]) {
     if ( n != (ssize_t)sizeMessage) {
         perror("sendto()");
         close (socketClient);
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
     //reception du message
 
