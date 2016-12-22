@@ -12,13 +12,13 @@
 
 int main(int argc, char** argv) {
 
-    if(argc!=2){
+    if(argc!=2) {
         perror("Usage : serveur <port>");
         exit(-1);
     }
 
     /*
-     * variable global
+     * variables globales
      */
     const size_t sizeMessage = 256;           // taille maximal du message
     const char bonjour[] = "Bonjour ";    // pour le message retour du serveur
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     socklen_t lenServer = sizeof(serverAddress);
 
     int bindReturn = bind(serverSocket, (struct sockaddr*) &serverAddress, lenServer);  // affectation du nom a la socket
-    if (bindReturn < 0){
+    if (bindReturn < 0) {
         perror("bind()");
         close (serverSocket);
         exit(EXIT_FAILURE);
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
          * creation de la sockaddr_in pour le client
          */
         struct sockaddr_in clientAddress;
-        socklen_t lenClient=sizeof(clientAddress);
+        socklen_t lenClient = sizeof(clientAddress);
 
         /*
          * reception du message et configuration de la sockaddr_in suivant le client

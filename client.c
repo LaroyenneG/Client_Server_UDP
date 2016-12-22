@@ -12,13 +12,13 @@
 
 int main(int argc, char* argv[]) {
 
-    if(argc<4){
+    if(argc<4) {
         perror("Usage : client <address> <port> <message>");
         exit(-1);
     }
 
     /*
-     * variable global
+     * variables globales
      */
     const int sizeMax = 256;      // taille maximal du message
     const int start=3;           //message ecrit a partir du 4eme argument
@@ -45,9 +45,9 @@ int main(int argc, char* argv[]) {
      */
     char message[sizeMessage];
     memset(message, '\0', sizeof(message));      // transformation en "string" vide pour strcat
-    for(int i=start; i<argc; i++){
+    for(int i=start; i<argc; i++) {
         strcat(message, argv[i]);
-        if(i+1<argc){
+        if(i+1<argc) {
             strcat(message, " ");
         }
     }
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
      * creation de la socket du client
      */
     int socketClient=socket(AF_INET, SOCK_DGRAM, 0);
-    if(socketClient<0){
+    if(socketClient<0) {
         perror("socket()");
         exit(EXIT_FAILURE);
     }
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 
 
     int bindReturn = bind(socketClient, (const struct sockaddr *) &clientAddress, lenClient);   // affectation du nom a la socket
-    if (bindReturn < 0){
+    if (bindReturn < 0) {
         perror("bind()");
         close (socketClient);
         exit(EXIT_FAILURE);
@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 
 
     nbChar = recvfrom(socketClient, answer, sizeAnswer, 0, (struct sockaddr *) &serverAddress, &lenClient);
-    if (nbChar != sizeAnswer){
+    if (nbChar != sizeAnswer) {
         perror("sendto() : invalid size");
         close(socketClient);
         exit(EXIT_FAILURE);
