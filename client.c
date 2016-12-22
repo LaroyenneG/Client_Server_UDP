@@ -9,7 +9,7 @@
 #include <string.h>
 #include <hdf5.h>
 #include <hdf5_hl.h>
-#include "client_serveur.h"
+#include <arpa/inet.h>
 
 int main(int argc, char* argv[]) {
 
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
     if ( bindReturn < 0 ){
         perror("bind()");
         close (socketClient);
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     bzero( &serveur, sizeof(serveur) );

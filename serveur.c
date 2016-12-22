@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include <tkPort.h>
-#include "client_serveur.h"
+#include <netdb.h>
+#include <arpa/inet.h>
 
 
 int main(int argc, char** argv) {
@@ -18,19 +19,39 @@ int main(int argc, char** argv) {
         exit(-1);
     }
 
-    int sockfd;
 
     /* sockaddr_in structure pour le client */
     struct sockaddr_in client;
     int lg_client=sizeof( client );
 
 
-    sockfd = creer_serveur_udp( atoi(argv[1]), 1 );
+    //int socketServeur = creer_serveur_udp( atoi(argv[1]), 1 );
+    struct sockaddr_in server_address;
+    int socketServeur = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if ( sockfd < 0 ) {
-        fprintf(stderr,"Serveur: echec de la fonction  creer_serveur_udp\n");
+
+    if ( socketServeur < 0 ) {
+        perror("socket()");
         exit(EXIT_FAILURE);
     }
+
+
+    bzero( (char *) &server_address , sizeof(server_address));
+    server_address.sin_family = AF_INET;
+
+    server_address.sin_addr.s_addr = htonl( INADDR_ANY );
+
+    server_address.sin_port = htons ((uint16_t) atoi(argv[1]));
+
+    int bindReturn=bind(socketServeur, (struct sockaddr *) &server_address , sizeof(server_address));
+
+    if (bindReturn<0){
+        perror("bind()");
+        close (socketServeur);
+        exit(EXIT_FAILURE);
+    }
+
+
 
     while(1){
 
@@ -38,11 +59,11 @@ int main(int argc, char** argv) {
 
         ssize_t n;
 
-        n = recvfrom (sockfd, message, (size_t) sizeMessage, 0 , (struct sockaddr *)&client , (socklen_t *) &lg_client);
+        n = recvfrom (socketServeur, message, (size_t) sizeMessage, 0 , (struct sockaddr *)&client , (socklen_t *) &lg_client);
 
         if ( n <= 0 ) {
             perror("No byte received");
-            close(sockfd);
+            close(socketServeur);
             exit(EXIT_FAILURE);
         }
 
@@ -69,11 +90,11 @@ int main(int argc, char** argv) {
         printf("Nouveau message:%s\n",answer);
 
 
-        n = sendto (sockfd, answer , strlen(answer) + 1 , 0, (struct sockaddr *)&client , (socklen_t) lg_client);
+        n = sendto (socketServeur, answer , strlen(answer) + 1 , 0, (struct sockaddr *)&client , (socklen_t) lg_client);
 
         if ( n != strlen(answer)+1 ) {
             perror("sendto()");
-            close ( sockfd);
+            close ( socketServeur);
             exit (EXIT_FAILURE);
         }
     }
