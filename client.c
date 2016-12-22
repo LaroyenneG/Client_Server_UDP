@@ -85,10 +85,21 @@ int main(int argc, char* argv[]) {
     }
 
     /*
+     * obtention de l'adresse a partir du nom
+     */
+    struct hostent *address;
+    address = gethostbyname(argv[1]);
+    if (address == NULL) {
+        perror("invalid address");
+        exit(EXIT_FAILURE);
+    }
+
+
+    /*
      * creation et configuration de la sockaddr_in du serveur
      */
     struct sockaddr_in serverAddress;
-    serverAddress.sin_addr.s_addr = inet_addr(argv[1]);
+    memcpy(&serverAddress.sin_addr, *(address->h_addr_list), (size_t) address->h_length);
     memset(serverAddress.sin_zero, 0, sizeof(serverAddress.sin_zero));
     serverAddress.sin_port = htons((uint16_t) atoi(argv[2]));
     serverAddress.sin_family = AF_INET;
