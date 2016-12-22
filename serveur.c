@@ -2,102 +2,107 @@
 // Created by guillaume on 16/12/16.
 //
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <netinet/in.h>
 #include <tkPort.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-
+#include <string.h>
 
 int main(int argc, char** argv) {
-    int sizeMessage=256;
 
     if(argc!=2){
         perror("Usage : serveur <port>");
         exit(-1);
     }
 
-
-    /* sockaddr_in structure pour le client */
-    struct sockaddr_in client;
-    int lg_client=sizeof( client );
-
-
-    //int socketServeur = creer_serveur_udp( atoi(argv[1]), 1 );
-    struct sockaddr_in server_address;
-    int socketServeur = socket(AF_INET, SOCK_DGRAM, 0);
+    /*
+     * variable global
+     */
+    const int sizeMessage = 256;           // taille maximal du message
+    const char bonjour[] = "Bonjour ";    // pour le message retour du serveur
+    ssize_t nbChar;                      // pour le nombre d octet lue et envoie
 
 
-    if ( socketServeur < 0 ) {
+    /*
+     * creation de la socket du serveur
+     */
+    int serverSocket = socket(AF_INET, SOCK_DGRAM, 0);
+    if (serverSocket < 0) {
         perror("socket()");
         exit(EXIT_FAILURE);
     }
 
+    /*
+     * creation et configuration de la sockaddr_in du serveur
+     */
+    struct sockaddr_in serverAddress;
+    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+    memset(serverAddress.sin_zero, 0, sizeof(serverAddress.sin_zero));
+    serverAddress.sin_port = htons((uint16_t) atoi(argv[1]));
+    serverAddress.sin_family = AF_INET;
+    socklen_t lenServer = sizeof(serverAddress);
 
-    bzero( (char *) &server_address , sizeof(server_address));
-    server_address.sin_family = AF_INET;
-
-    server_address.sin_addr.s_addr = htonl( INADDR_ANY );
-
-    server_address.sin_port = htons ((uint16_t) atoi(argv[1]));
-
-    int bindReturn=bind(socketServeur, (struct sockaddr *) &server_address , sizeof(server_address));
-
-    if (bindReturn<0){
+    int bindReturn = bind(serverSocket, (struct sockaddr*) &serverAddress, lenServer);  //affectation du nom a la socket
+    if (bindReturn < 0){
         perror("bind()");
-        close (socketServeur);
+        close (serverSocket);
         exit(EXIT_FAILURE);
     }
 
-
-
+    /*
+     * gestion des clients
+     */
     while(1){
+        /*
+         * creation de la sockaddr_in pour le client
+         */
+        struct sockaddr_in clientAddress;
+        socklen_t lenClient=sizeof(clientAddress);
 
+        /*
+         * reception du message et configuration de la sockaddr_in suivant le client
+         */
         char message[sizeMessage];
-
-        ssize_t n;
-
-        n = recvfrom (socketServeur, message, (size_t) sizeMessage, 0 , (struct sockaddr *)&client , (socklen_t *) &lg_client);
-
-        if ( n <= 0 ) {
+        nbChar = recvfrom(serverSocket, message, (size_t) sizeMessage, 0, (struct sockaddr*) &clientAddress, &lenClient);
+        if (nbChar <= 0) {
             perror("No byte received");
-            close(socketServeur);
+            close(serverSocket);
             exit(EXIT_FAILURE);
         }
 
-        printf("Message recu du client:%s\n",message);
+        /*
+         * recuperation du domaine dans hostname si il existe
+         */
+        char hostname[NI_MAXHOST];
+        int nameInfoReturn=getnameinfo((const struct sockaddr*) &clientAddress, lenClient, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD);
 
-
-        char domaine[NI_MAXHOST];
-
-        int getnameReturn=getnameinfo((const struct sockaddr *) &client, (socklen_t) lg_client, domaine, sizeof(domaine), NULL, 0, NI_NAMEREQD);
-
-        if (getnameReturn<0){
-            printf("CLIENT: %s:%d\n",inet_ntoa(client.sin_addr), client.sin_port);
-        } else{
-            printf("CLIENT: %s:%d (%s)\n",inet_ntoa(client.sin_addr), client.sin_port, domaine);
+        /*
+         * affichage des informations du client sur la sortie standard en fonction de la reussite de la recuperation du domaine
+         */
+        if (nameInfoReturn < 0) {
+            printf("CLIENT: %s:%d\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port);
+        } else {
+            printf("CLIENT: %s:%d (%s)\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port, hostname);
         }
 
-        // Envoi du message au client
-        char bonjour[]="Bonjour ";
+        /*
+         * envoie de la reponse au client
+         */
         char answer[sizeMessage+strlen(bonjour)];
-        memset(answer, '\0', sizeof(answer));
+        memset(answer, '\0', sizeof(answer));   // transformation en "string" vide pour strcat
+        //concatenation du message retour
         strcat(answer, bonjour);
         strcat(answer,message);
 
-        printf("Nouveau message:%s\n",answer);
-
-
-        n = sendto (socketServeur, answer , strlen(answer) + 1 , 0, (struct sockaddr *)&client , (socklen_t) lg_client);
-
-        if ( n != strlen(answer)+1 ) {
-            perror("sendto()");
-            close ( socketServeur);
-            exit (EXIT_FAILURE);
+        nbChar = sendto(serverSocket, answer, strlen(answer) + 1, 0, (struct sockaddr *) &clientAddress, lenClient);
+        if (nbChar != strlen(answer)+1) {
+            perror("sendto() : invalid size");
+            close(serverSocket);
+            exit(EXIT_FAILURE);
         }
     }
-
+    close(serverSocket);
     return 0;
 }
