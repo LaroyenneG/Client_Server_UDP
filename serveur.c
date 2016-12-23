@@ -64,7 +64,8 @@ int main(int argc, char** argv) {
         /*
          * reception du message et configuration de la sockaddr_in suivant le client
          */
-        char message[sizeMessage];
+        char message[sizeMessage+1];
+        message[sizeMessage]='\0';      // marqueur de fin de chaine a la fin de la taille maximal du message par securite (pour strcat) dans le cas ou le client n envairait pas le marqueur
         nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr*) &clientAddress, &lenClient);
         if (nbChar <= 0) {
             perror("No byte received");
@@ -90,7 +91,7 @@ int main(int argc, char** argv) {
         /*
          * envoie de la reponse au client
          */
-        char answer[sizeMessage+strlen(bonjour)];
+        char answer[strlen(message)+strlen(bonjour)+1];
         answer[0]='\0';                              // transformation en "string" vide pour strcat()
 
         /*

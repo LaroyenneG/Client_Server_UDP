@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     /*
      * calcul de la taille du message et verification
      */
-    size_t sizeMessage=0;
+    size_t sizeMessage=1;   // 1->'\0'
     for(int a=start; a<argc; a++) {
         sizeMessage+=strlen(argv[a]);
         if(a+1<argc) {
@@ -117,9 +117,8 @@ int main(int argc, char* argv[]) {
     /*
      * reseption de la reponse du serveur dans answer
      */
-    size_t sizeAnswer = (strlen(message) + 1 + 8); // calcul de la taille du message retour | 8->"Bonjour "
+    size_t sizeAnswer = (sizeMessage+8); // calcul de la taille du message retour | 8->"Bonjour "
     char answer[sizeAnswer];
-
 
     nbChar = recvfrom(socketClient, answer, sizeAnswer, 0, (struct sockaddr *) &serverAddress, &lenClient);
     if (nbChar != sizeAnswer) {
@@ -127,6 +126,7 @@ int main(int argc, char* argv[]) {
         close(socketClient);
         exit(EXIT_FAILURE);
     }
+
 
     printf("%s\n", answer);     // Affichage du message
 
