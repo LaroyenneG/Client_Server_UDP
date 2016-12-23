@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
     if(argc<4) {
         perror("Usage : client <address> <port> <message>");
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     /*
@@ -87,8 +87,7 @@ int main(int argc, char* argv[]) {
     /*
      * obtention de l'adresse a partir du nom
      */
-    struct hostent *address;
-    address = gethostbyname(argv[1]);
+    struct hostent *address = gethostbyname(argv[1]);
     if (address == NULL) {
         perror("invalid address");
         exit(EXIT_FAILURE);
