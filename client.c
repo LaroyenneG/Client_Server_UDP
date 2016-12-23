@@ -20,9 +20,9 @@ int main(int argc, char* argv[]) {
     /*
      * variables globales
      */
-    const int sizeMax = 256;      // taille maximal du message
+    const int sizeMax = 256;      // taille maximale du message
     const int start=3;           //message ecrit a partir du 4eme argument
-    ssize_t nbChar;             // pour le nombre d octets lue et envoie
+    ssize_t nbChar;             // pour le nombre d'octets lus et envoyes
 
 
     /*
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     socklen_t lenServer = sizeof(serverAddress);
 
     /*
-     * envoie du message au serveur
+     * envoi du message au serveur
      */
     nbChar = sendto(socketClient, message, sizeMessage, 0, (struct sockaddr *) &serverAddress, lenServer);
     if (nbChar != sizeMessage) {
@@ -115,7 +115,7 @@ int main(int argc, char* argv[]) {
     }
 
     /*
-     * reseption de la reponse du serveur dans answer
+     * reception de la reponse du serveur dans answer
      */
     size_t sizeAnswer = (sizeMessage+8); // calcul de la taille du message retour | 8->"Bonjour "
     char answer[sizeAnswer];
@@ -126,7 +126,6 @@ int main(int argc, char* argv[]) {
         close(socketClient);
         exit(EXIT_FAILURE);
     }
-
 
     printf("%s\n", answer);     // Affichage du message
 
