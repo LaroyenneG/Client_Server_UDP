@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     /*
      * variables globales
      */
-    const size_t sizeMessage = 256;           // taille maximal du message
+    const size_t sizeMessage = 256;        // taille maximal du message
     const char bonjour[] = "Bonjour ";    // pour le message retour du serveur
     ssize_t nbChar;                      // pour le nombre d octets lue et envoie
 
@@ -91,7 +91,8 @@ int main(int argc, char** argv) {
          * envoie de la reponse au client
          */
         char answer[sizeMessage+strlen(bonjour)];
-        memset(answer, '\0', sizeof(answer));   // transformation en "string" vide pour strcat
+        answer[0]='\0';                              // transformation en "string" vide pour strcat()
+
         /*
          * concatenation du message retour
          */

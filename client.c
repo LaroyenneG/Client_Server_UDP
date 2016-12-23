@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
      * concatenation de tous les arguments dans message
      */
     char message[sizeMessage];
-    memset(message, '\0', sizeof(message));      // transformation en "string" vide pour strcat
+    message[0]='\0';                    // transformation en "string" vide pour strcat()
     for(int i=start; i<argc; i++) {
         strcat(message, argv[i]);
         if(i+1<argc) {
