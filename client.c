@@ -13,7 +13,7 @@
 int main(int argc, char* argv[]) {
 
     if(argc<4) {
-        perror("Usage : client <address> <port> <message>");
+        fprintf(stderr, "Usage : client <address> <port> <message>");
         exit(EXIT_FAILURE);
     }
 
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     /* creation de la socket du client */
     int socketClient=socket(AF_INET, SOCK_DGRAM, 0);
     if(socketClient<0) {
-        perror("socket()");
+        fprintf(stderr, "socket()");
         exit(EXIT_FAILURE);
     }
 
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 
     int bindReturn = bind(socketClient, (const struct sockaddr *) &clientAddress, lenClient);   // affectation du nom a la socket
     if (bindReturn < 0) {
-        perror("bind()");
+        fprintf(stderr, "bind()");
         close (socketClient);
         exit(EXIT_FAILURE);
     }
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     /* obtention de l'adresse a partir du nom */
     struct hostent *address = gethostbyname(argv[1]);
     if (address == NULL) {
-        perror("invalid address");
+        fprintf(stderr, "invalid address");
         exit(EXIT_FAILURE);
     }
 
@@ -97,13 +97,12 @@ int main(int argc, char* argv[]) {
     socklen_t lenServer = sizeof(serverAddress);
 
 
-
     /*
      * envoi du message au serveur
      */
     nbChar = sendto(socketClient, message, sizeMessage, 0, (struct sockaddr *) &serverAddress, lenServer);
     if (nbChar != sizeMessage) {
-        perror("sendto()");
+        fprintf(stderr, "sendto()");
         close (socketClient);
         exit(EXIT_FAILURE);
     }
@@ -118,12 +117,13 @@ int main(int argc, char* argv[]) {
 
     nbChar = recvfrom(socketClient, answer, sizeAnswer, 0, (struct sockaddr *) &serverAddress, &lenClient);
     if (nbChar != sizeAnswer) {
-        perror("sendto() : invalid size");
+        fprintf(stderr, "recvfrom() : invalid size");
         close(socketClient);
         exit(EXIT_FAILURE);
     }
 
-    printf("%s\n", answer);     // Affichage du message
+    /* affichage du message */
+    fprintf(stdout, "%s\n", answer);
 
     close(socketClient);
 

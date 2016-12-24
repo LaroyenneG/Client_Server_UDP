@@ -13,7 +13,7 @@
 int main(int argc, char** argv) {
 
     if(argc!=2) {
-        perror("Usage : serveur <port>");
+        fprintf(stderr,"Usage : serveur <port>");
         exit(EXIT_FAILURE);
     }
 
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     /* creation de la socket du serveur */
     int serverSocket = socket(AF_INET, SOCK_DGRAM, 0);
     if (serverSocket < 0) {
-        perror("socket()");
+        fprintf(stderr, "socket()");
         exit(EXIT_FAILURE);
     }
 
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     int bindReturn = bind(serverSocket, (struct sockaddr*) &serverAddress, lenServer);  // affectation du nom a la socket
     if (bindReturn < 0) {
-        perror("bind()");
+        fprintf(stderr, "bind()");
         close (serverSocket);
         exit(EXIT_FAILURE);
     }
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         message[sizeMessage]='\0';      // marqueur de fin de chaine a la fin de la taille maximale du message par securite (pour strcat) dans le cas ou le client n'enverrait pas le marqueur de fin de chaine
         nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr*) &clientAddress, &lenClient);
         if (nbChar <= 0) {
-            perror("No byte received");
+            fprintf(stderr, "No byte received");
             close(serverSocket);
             exit(EXIT_FAILURE);
         }
@@ -81,22 +81,21 @@ int main(int argc, char** argv) {
         /* affichage des informations du client sur la sortie standard
            en fonction de la reussite de la recuperation du domaine */
         if (nameInfoReturn < 0) {
-            printf("CLIENT: %s:%d\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port);
+            fprintf(stdout, "CLIENT: %s:%d\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port);
         } else {
-            printf("CLIENT: %s:%d (%s)\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port, hostname);
+            fprintf(stdout, "CLIENT: %s:%d (%s)\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port, hostname);
         }
 
-        /* envoi de la reponse au client */
+        /* concatenation du message retour dans answer */
         char answer[strlen(message)+strlen(bonjour)+1];
-        answer[0]='\0';                              // transformation en "string" vide pour strcat()
-
-        /* concatenation du message retour */
+        answer[0]='\0';                                 // transformation en "string" vide pour strcat()
         strcat(answer, bonjour);
         strcat(answer,message);
 
+        /* envoi de la reponse au client */
         nbChar = sendto(serverSocket, answer, strlen(answer) + 1, 0, (struct sockaddr *) &clientAddress, lenClient);
         if (nbChar != strlen(answer)+1) {
-            perror("sendto() : invalid size");
+            fprintf(stderr, "sendto() : invalid size");
             close(serverSocket);
             exit(EXIT_FAILURE);
         }
