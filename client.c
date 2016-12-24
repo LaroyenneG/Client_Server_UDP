@@ -20,14 +20,16 @@ int main(int argc, char* argv[]) {
     /*
      * variables globales
      */
-    const int sizeMax = 256;      // taille maximale du message
+    const int sizeMax = 65536;    // taille maximale du message
     const int start=3;           //message ecrit a partir du 4eme argument
     ssize_t nbChar;             // pour le nombre d'octets lus et envoyes
 
 
     /*
-     * calcul de la taille du message et verification
+     * preparation du message
      */
+
+    /* calcul de la taille du message et verification */
     size_t sizeMessage=1;   // 1->'\0'
     for(int a=start; a<argc; a++) {
         sizeMessage+=strlen(argv[a]);
@@ -40,9 +42,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    /*
-     * concatenation de tous les arguments dans message
-     */
+    /* concatenation de tous les arguments dans message */
     char message[sizeMessage];
     message[0]='\0';                    // transformation en "string" vide pour strcat()
     for(int i=start; i<argc; i++) {
@@ -57,18 +57,14 @@ int main(int argc, char* argv[]) {
      * configuration pour la transmission udp vers le serveur
      */
 
-    /*
-     * creation de la socket du client
-     */
+    /* creation de la socket du client */
     int socketClient=socket(AF_INET, SOCK_DGRAM, 0);
     if(socketClient<0) {
         perror("socket()");
         exit(EXIT_FAILURE);
     }
 
-    /*
-     * creation et configuration de la sockaddr_in du client
-     */
+    /* creation et configuration de la sockaddr_in du client */
     struct sockaddr_in clientAddress;
     clientAddress.sin_addr.s_addr = htonl(INADDR_ANY);
     memset(clientAddress.sin_zero, 0, sizeof(clientAddress.sin_zero));
@@ -84,9 +80,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    /*
-     * obtention de l'adresse a partir du nom
-     */
+    /* obtention de l'adresse a partir du nom */
     struct hostent *address = gethostbyname(argv[1]);
     if (address == NULL) {
         perror("invalid address");
@@ -94,15 +88,15 @@ int main(int argc, char* argv[]) {
     }
 
 
-    /*
-     * creation et configuration de la sockaddr_in du serveur
-     */
+    /* creation et configuration de la sockaddr_in du serveur */
     struct sockaddr_in serverAddress;
     memcpy(&serverAddress.sin_addr, *(address->h_addr_list), (size_t) address->h_length);
     memset(serverAddress.sin_zero, 0, sizeof(serverAddress.sin_zero));
     serverAddress.sin_port = htons((uint16_t) atoi(argv[2]));
     serverAddress.sin_family = AF_INET;
     socklen_t lenServer = sizeof(serverAddress);
+
+
 
     /*
      * envoi du message au serveur
@@ -113,6 +107,8 @@ int main(int argc, char* argv[]) {
         close (socketClient);
         exit(EXIT_FAILURE);
     }
+
+
 
     /*
      * reception de la reponse du serveur dans answer

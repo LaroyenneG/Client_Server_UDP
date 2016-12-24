@@ -20,23 +20,23 @@ int main(int argc, char** argv) {
     /*
      * variables globales
      */
-    const size_t sizeMessage = 256;        // taille maximale du message
+    const size_t sizeMessage = 65536;      // taille maximale du message
     const char bonjour[] = "Bonjour ";    // pour le message retour du serveur
     ssize_t nbChar;                      // pour le nombre d'octets lus et envoyes
 
 
     /*
-     * creation de la socket du serveur
+     * creation et configuration du serveur
      */
+
+    /* creation de la socket du serveur */
     int serverSocket = socket(AF_INET, SOCK_DGRAM, 0);
     if (serverSocket < 0) {
         perror("socket()");
         exit(EXIT_FAILURE);
     }
 
-    /*
-     * creation et configuration de la sockaddr_in du serveur
-     */
+    /* creation et configuration de la sockaddr_in du serveur */
     struct sockaddr_in serverAddress;
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
     memset(serverAddress.sin_zero, 0, sizeof(serverAddress.sin_zero));
@@ -55,15 +55,16 @@ int main(int argc, char** argv) {
      * gestion des clients
      */
     while(1){
+
         /*
-         * creation de la sockaddr_in pour le client
+         * reception des clients
          */
+
+        /* creation de la sockaddr_in pour le client */
         struct sockaddr_in clientAddress;
         socklen_t lenClient = sizeof(clientAddress);
 
-        /*
-         * reception du message et configuration de la sockaddr_in suivant le client
-         */
+        /* reception du message et configuration de la sockaddr_in suivant le client */
         char message[sizeMessage+1];
         message[sizeMessage]='\0';      // marqueur de fin de chaine a la fin de la taille maximale du message par securite (pour strcat) dans le cas ou le client n'enverrait pas le marqueur de fin de chaine
         nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr*) &clientAddress, &lenClient);
@@ -73,30 +74,23 @@ int main(int argc, char** argv) {
             exit(EXIT_FAILURE);
         }
 
-        /*
-         * recuperation du domaine dans hostname si il existe
-         */
+        /* recuperation du domaine dans hostname si il existe */
         char hostname[NI_MAXHOST];
         int nameInfoReturn=getnameinfo((const struct sockaddr*) &clientAddress, lenClient, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD);
 
-        /*
-         * affichage des informations du client sur la sortie standard en fonction de la reussite de la recuperation du domaine
-         */
+        /* affichage des informations du client sur la sortie standard
+           en fonction de la reussite de la recuperation du domaine */
         if (nameInfoReturn < 0) {
             printf("CLIENT: %s:%d\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port);
         } else {
             printf("CLIENT: %s:%d (%s)\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port, hostname);
         }
 
-        /*
-         * envoi de la reponse au client
-         */
+        /* envoi de la reponse au client */
         char answer[strlen(message)+strlen(bonjour)+1];
         answer[0]='\0';                              // transformation en "string" vide pour strcat()
 
-        /*
-         * concatenation du message retour
-         */
+        /* concatenation du message retour */
         strcat(answer, bonjour);
         strcat(answer,message);
 
