@@ -13,7 +13,7 @@
 int main(int argc, char** argv) {
 
     if(argc!=2) {
-        fprintf(stderr,"Usage : serveur <port>");
+        fprintf(stderr,"Usage : serveur <port>\n");
         exit(EXIT_FAILURE);
     }
 
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     /* creation de la socket du serveur */
     int serverSocket = socket(AF_INET, SOCK_DGRAM, 0);
     if (serverSocket < 0) {
-        fprintf(stderr, "socket()");
+        perror("socket()");
         exit(EXIT_FAILURE);
     }
 
@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
     int bindReturn = bind(serverSocket, (struct sockaddr*) &serverAddress, lenServer);  // affectation du nom a la socket
     if (bindReturn < 0) {
-        fprintf(stderr, "bind()");
+        perror("bind()");
         close (serverSocket);
         exit(EXIT_FAILURE);
     }
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         message[sizeMessage]='\0';      // marqueur de fin de chaine a la fin de la taille maximale du message par securite (pour strcat) dans le cas ou le client n'enverrait pas le marqueur de fin de chaine
         nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr*) &clientAddress, &lenClient);
         if (nbChar <= 0) {
-            fprintf(stderr, "No byte received");
+            fprintf(stderr, "No byte received\n");
             close(serverSocket);
             exit(EXIT_FAILURE);
         }
@@ -95,7 +95,7 @@ int main(int argc, char** argv) {
         /* envoi de la reponse au client */
         nbChar = sendto(serverSocket, answer, strlen(answer) + 1, 0, (struct sockaddr *) &clientAddress, lenClient);
         if (nbChar != strlen(answer)+1) {
-            fprintf(stderr, "sendto() : invalid size");
+            fprintf(stderr, "sendto() : invalid size\n");
             close(serverSocket);
             exit(EXIT_FAILURE);
         }

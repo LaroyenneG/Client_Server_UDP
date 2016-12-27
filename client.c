@@ -13,7 +13,7 @@
 int main(int argc, char* argv[]) {
 
     if(argc<4) {
-        fprintf(stderr, "Usage : client <address> <port> <message>");
+        fprintf(stderr, "Usage : client <address> <port> <message>\n");
         exit(EXIT_FAILURE);
     }
 
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
         }
     }
     if(sizeMessage>=sizeMax) {
-        fprintf(stderr, "Over size (%d char max)", sizeMax);
+        fprintf(stderr, "Over size (%d char max)\n", sizeMax);
         exit(EXIT_FAILURE);
     }
 
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     /* creation de la socket du client */
     int socketClient=socket(AF_INET, SOCK_DGRAM, 0);
     if(socketClient<0) {
-        fprintf(stderr, "socket()");
+        perror("socket()");
         exit(EXIT_FAILURE);
     }
 
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 
     int bindReturn = bind(socketClient, (const struct sockaddr *) &clientAddress, lenClient);   // affectation du nom a la socket
     if (bindReturn < 0) {
-        fprintf(stderr, "bind()");
+        perror("bind()");
         close (socketClient);
         exit(EXIT_FAILURE);
     }
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
     /* obtention de l'adresse a partir du nom */
     struct hostent *address = gethostbyname(argv[1]);
     if (address == NULL) {
-        fprintf(stderr, "invalid address");
+        fprintf(stderr, "invalid address\n");
         exit(EXIT_FAILURE);
     }
 
@@ -102,7 +102,7 @@ int main(int argc, char* argv[]) {
      */
     nbChar = sendto(socketClient, message, sizeMessage, 0, (struct sockaddr *) &serverAddress, lenServer);
     if (nbChar != sizeMessage) {
-        fprintf(stderr, "sendto()");
+        fprintf(stderr, "sendto()\n");
         close (socketClient);
         exit(EXIT_FAILURE);
     }
@@ -117,7 +117,7 @@ int main(int argc, char* argv[]) {
 
     nbChar = recvfrom(socketClient, answer, sizeAnswer, 0, (struct sockaddr *) &serverAddress, &lenClient);
     if (nbChar != sizeAnswer) {
-        fprintf(stderr, "recvfrom() : invalid size");
+        fprintf(stderr, "recvfrom() : invalid size\n");
         close(socketClient);
         exit(EXIT_FAILURE);
     }
