@@ -75,15 +75,15 @@ int main(int argc, char** argv) {
         }
 
         /* recuperation du domaine dans hostname si il existe */
-        char hostname[NI_MAXHOST];
-        int nameInfoReturn=getnameinfo((const struct sockaddr*) &clientAddress, lenClient, hostname, sizeof(hostname), NULL, 0, NI_NAMEREQD);
+        char domaine[NI_MAXHOST];
+        int nameInfoReturn=getnameinfo((const struct sockaddr*) &clientAddress, lenClient, domaine, sizeof(domaine), NULL, 0, NI_NAMEREQD);
 
         /* affichage des informations du client sur la sortie standard
            en fonction de la reussite de la recuperation du domaine */
         if (nameInfoReturn < 0) {
             fprintf(stdout, "CLIENT: %s:%d\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port);
         } else {
-            fprintf(stdout, "CLIENT: %s:%d (%s)\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port, hostname);
+            fprintf(stdout, "CLIENT: %s:%d (%s)\n", inet_ntoa(clientAddress.sin_addr), clientAddress.sin_port, domaine);
         }
 
         /* concatenation du message retour dans answer */
