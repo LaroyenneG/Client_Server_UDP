@@ -1,5 +1,5 @@
 //
-// Created by guillaume on 16/12/16.
+// Created by Guillaume Laroyenne S3B2 on 16/12/16.
 //
 
 #include <stdlib.h>
