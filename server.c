@@ -47,35 +47,32 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    while (1) {
 
-        struct sockaddr_in6 clientAddress;
+    struct sockaddr_in6 clientAddress;
 
-        char message[sizeMessage + 1];
-        message[sizeMessage] = '\0';
-        nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr *) &clientAddress, &lensin6);
-        if (nbChar <= 0) {
-            fprintf(stderr, "No byte received\n");
-            close(serverSocket);
-            exit(EXIT_FAILURE);
-        }
-
-
-        char domaine[NI_MAXHOST];
-
-        char answer[strlen(message) + strlen(bonjour) + 1];
-        answer[0] = '\0';
-        strcat(answer, bonjour);
-        strcat(answer, message);
-
-
-        nbChar = sendto(serverSocket, answer, strlen(answer) + 1, 0, (struct sockaddr *) &clientAddress, lensin6);
-        if (nbChar != strlen(answer) + 1) {
-            fprintf(stderr, "sendto() : invalid size\n");
-            close(serverSocket);
-            exit(EXIT_FAILURE);
-        }
+    char message[sizeMessage + 1];
+    message[sizeMessage] = '\0';
+    nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr *) &clientAddress, &lensin6);
+    if (nbChar <= 0) {
+        fprintf(stderr, "No byte received\n");
+        close(serverSocket);
+        exit(EXIT_FAILURE);
     }
+
+
+    char answer[strlen(message) + strlen(bonjour) + 1];
+    answer[0] = '\0';
+    strcat(answer, bonjour);
+    strcat(answer, message);
+
+
+    nbChar = sendto(serverSocket, answer, strlen(answer) + 1, 0, (struct sockaddr *) &clientAddress, lensin6);
+    if (nbChar != strlen(answer) + 1) {
+        fprintf(stderr, "sendto() : invalid size\n");
+        close(serverSocket);
+        exit(EXIT_FAILURE);
+    }
+
 
     close(serverSocket);
 
