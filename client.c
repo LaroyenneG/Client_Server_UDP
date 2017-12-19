@@ -104,6 +104,8 @@ int main(int argc, char *argv[]) {
 
     fprintf(stdout, "%s\n", answer);
 
+    freeaddrinfo(psinfo);
+
     close(socketClient);
 
     return 0;
