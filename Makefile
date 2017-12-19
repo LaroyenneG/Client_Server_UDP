@@ -1,8 +1,8 @@
 OBJ1 := client.o
 EXENAME1 := client
 
-OBJ2 := serveur.o
-EXENAME2 := serveur
+OBJ2 := server.o
+EXENAME2 := server
 
 CC := gcc
 CFLAGS := -Wall -O3 -g
