@@ -1,8 +1,6 @@
 *.o
 *.exe
-CMakeLists*
-fonctions_creation*
-cmake*
+cmake-build-debug/*
 .idea/*
 *.a
 
