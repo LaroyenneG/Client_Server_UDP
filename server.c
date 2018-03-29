@@ -2,7 +2,7 @@
 // Created by Guillaume Laroyenne S3B2 on 16/12/16.
 //
 
-
+#include <stdbool.h>
 #include "client_server.h"
 
 
@@ -39,7 +39,9 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    for (;;) {
+    bool run = true;
+
+    while (run) {
 
         struct sockaddr_in6 clientAddress;
 
@@ -66,12 +68,18 @@ int main(int argc, char **argv) {
         strcat(answer, message);
 
 
+        if (strncmp(message, "exit()", MESSAGE_SIZE) == 0) {
+            run = false;
+            strcpy(answer, "server is closed");
+        }
+
         nbChar = sendto(serverSocket, answer, MESSAGE_SIZE, 0, (struct sockaddr *) &clientAddress, lensin6);
         if (nbChar != MESSAGE_SIZE) {
             perror("sendto()");
             close(serverSocket);
             exit(EXIT_FAILURE);
         }
+
 
     }
 
