@@ -2,17 +2,11 @@
 // Created by Guillaume Laroyenne S3B2 on 16/12/16.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <tkPort.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <string.h>
 
-const size_t sizeMessage = 65536;
+#include "client_server.h"
+
+
 const char bonjour[] = "Bonjour ";
-ssize_t nbChar;
 
 
 int main(int argc, char **argv) {
@@ -21,7 +15,6 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Usage : serveur <port>\n");
         exit(EXIT_FAILURE);
     }
-
 
     int serverSocket = socket(PF_INET6, SOCK_DGRAM, 0);
     if (serverSocket < 0) {
@@ -40,39 +33,47 @@ int main(int argc, char **argv) {
     sin6.sin6_family = AF_INET6;
 
 
-    int bindReturn = bind(serverSocket, (struct sockaddr *) &sin6, lensin6);
-    if (bindReturn < 0) {
+    if (bind(serverSocket, (struct sockaddr *) &sin6, lensin6) < 0) {
         perror("bind()");
         close(serverSocket);
         exit(EXIT_FAILURE);
     }
 
+    for (;;) {
 
-    struct sockaddr_in6 clientAddress;
+        struct sockaddr_in6 clientAddress;
 
-    char message[sizeMessage + 1];
-    message[sizeMessage] = '\0';
-    nbChar = recvfrom(serverSocket, message, sizeMessage, 0, (struct sockaddr *) &clientAddress, &lensin6);
-    if (nbChar <= 0) {
-        fprintf(stderr, "No byte received\n");
-        close(serverSocket);
-        exit(EXIT_FAILURE);
+        char message[MESSAGE_SIZE];
+        memset(message, '\0', MESSAGE_SIZE);
+
+        ssize_t nbChar = recvfrom(serverSocket, message, MESSAGE_SIZE, 0, (struct sockaddr *) &clientAddress, &lensin6);
+        if (nbChar != MESSAGE_SIZE) {
+            perror("recvfrom()");
+            close(serverSocket);
+            exit(EXIT_FAILURE);
+        }
+
+
+        char ipv6[INET6_ADDRSTRLEN];
+        memset(ipv6, '\0', sizeof(ipv6));
+        inet_ntop(AF_INET6, &clientAddress.sin6_addr, ipv6, sizeof(ipv6));
+
+        printf("[%s]:%d\n", ipv6, clientAddress.sin6_port);
+
+        char answer[MESSAGE_SIZE];
+        memset(answer, '\0', MESSAGE_SIZE);
+        strcat(answer, bonjour);
+        strcat(answer, message);
+
+
+        nbChar = sendto(serverSocket, answer, MESSAGE_SIZE, 0, (struct sockaddr *) &clientAddress, lensin6);
+        if (nbChar != MESSAGE_SIZE) {
+            perror("sendto()");
+            close(serverSocket);
+            exit(EXIT_FAILURE);
+        }
+
     }
-
-
-    char answer[strlen(message) + strlen(bonjour) + 1];
-    answer[0] = '\0';
-    strcat(answer, bonjour);
-    strcat(answer, message);
-
-
-    nbChar = sendto(serverSocket, answer, strlen(answer) + 1, 0, (struct sockaddr *) &clientAddress, lensin6);
-    if (nbChar != strlen(answer) + 1) {
-        fprintf(stderr, "sendto() : invalid size\n");
-        close(serverSocket);
-        exit(EXIT_FAILURE);
-    }
-
 
     close(serverSocket);
 

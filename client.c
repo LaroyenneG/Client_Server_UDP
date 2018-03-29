@@ -2,42 +2,40 @@
 // Created by Guillaume Laroyenne S3B2 on 16/12/16.
 //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <tkPort.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <string.h>
 
-const int sizeMax = 65536;
-const int start = 3;
-ssize_t nbChar;
+
+#include "client_server.h"
 
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 4) {
+
+    const int ARGUMENT_NUMBER = 3;
+
+    if (argc < ARGUMENT_NUMBER + 1) {
         fprintf(stderr, "Usage : client <address> <port> <message>\n");
         exit(EXIT_FAILURE);
     }
 
 
     size_t sizeMessage = 1;
-    for (int a = start; a < argc; a++) {
+    for (int a = ARGUMENT_NUMBER - 1; a < argc; a++) {
         sizeMessage += strlen(argv[a]);
         if (a + 1 < argc) {
             sizeMessage++;
         }
     }
-    if (sizeMessage >= sizeMax) {
-        fprintf(stderr, "Over size (%d char max)\n", sizeMax);
+
+    if (sizeMessage >= MESSAGE_SIZE) {
+        fprintf(stderr, "Over size (%d char max)\n", MESSAGE_SIZE);
         exit(EXIT_FAILURE);
     }
 
-    char message[sizeMessage];
-    message[0] = '\0';
-    for (int i = start; i < argc; i++) {
+    char message[MESSAGE_SIZE];
+    memset(message, '\0', MESSAGE_SIZE);
+
+
+    for (int i = ARGUMENT_NUMBER; i < argc; i++) {
         strcat(message, argv[i]);
         if (i + 1 < argc) {
             strcat(message, " ");
@@ -60,8 +58,7 @@ int main(int argc, char *argv[]) {
     sin6.sin6_family = AF_INET6;
 
 
-    int status = bind(socketClient, (const struct sockaddr *) &sin6, sin6len);
-    if (status < 0) {
+    if (bind(socketClient, (const struct sockaddr *) &sin6, sin6len) < 0) {
         perror("bind()");
         close(socketClient);
         exit(EXIT_FAILURE);
@@ -77,26 +74,25 @@ int main(int argc, char *argv[]) {
     sainfo.ai_socktype = SOCK_DGRAM;
     sainfo.ai_protocol = IPPROTO_UDP;
 
-    status = getaddrinfo(argv[1], argv[2], &sainfo, &psinfo);
-    if (status < 0) {
+    if (getaddrinfo(argv[1], argv[2], &sainfo, &psinfo) < 0) {
         perror("getaddrinfo");
         exit(EXIT_FAILURE);
     }
 
-    nbChar = sendto(socketClient, message, sizeMessage, 0, psinfo->ai_addr, sin6len);
-    if (nbChar != sizeMessage) {
-        fprintf(stderr, "sendto()\n");
+    ssize_t nbChar = sendto(socketClient, message, MESSAGE_SIZE, 0, psinfo->ai_addr, sin6len);
+    if (nbChar != MESSAGE_SIZE) {
+        perror("sendto()");
         close(socketClient);
         exit(EXIT_FAILURE);
     }
 
 
-    size_t sizeAnswer = (sizeMessage + 8);
-    char answer[sizeAnswer];
+    char answer[MESSAGE_SIZE];
+    memset(answer, '\0', MESSAGE_SIZE);
 
-    nbChar = recvfrom(socketClient, answer, sizeAnswer, 0, psinfo->ai_addr, &sin6len);
-    if (nbChar != sizeAnswer) {
-        fprintf(stderr, "recvfrom() : invalid size\n");
+    nbChar = recvfrom(socketClient, answer, MESSAGE_SIZE, 0, psinfo->ai_addr, &sin6len);
+    if (nbChar != MESSAGE_SIZE) {
+        perror("recvfrom()");
         close(socketClient);
         exit(EXIT_FAILURE);
     }
