@@ -2,7 +2,6 @@
 // Created by Guillaume Laroyenne S3B2 on 16/12/16.
 //
 
-#include <stdbool.h>
 #include "client_server.h"
 
 
@@ -68,7 +67,7 @@ int main(int argc, char **argv) {
         strcat(answer, message);
 
 
-        if (strncmp(message, "exit()", MESSAGE_SIZE) == 0) {
+        if (strncmp(message, "exit()", 5) == 0) {
             run = false;
             strcpy(answer, "server is closed");
         }
